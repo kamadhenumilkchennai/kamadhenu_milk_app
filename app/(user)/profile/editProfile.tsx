@@ -24,21 +24,8 @@ import {
 
 /* ---------------- REGEX ---------------- */
 const phoneRegex = /^[0-9]{10}$/;
-const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
-const websiteRegex =
-  /^(https?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w- ./?%&=]*)?$/;
 
 const defaultAvatar = require("@/assets/images/user-avatar.png");
-
-/* ---------------- HELPERS ---------------- */
-function generateUsername(fullName: string) {
-  return fullName
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, "_") // replace spaces with _
-    .replace(/[^a-z0-9_]/g, "") // remove invalid characters
-    .slice(0, 20); // max 20 chars
-}
 
 /* ---------------- LABEL COMPONENT ---------------- */
 const InputLabel = ({ children }: { children: string }) => (
@@ -58,13 +45,10 @@ export default function EditProfile() {
 
   const [saving, setSaving] = useState(false);
   const [avatarUri, setAvatarUri] = useState<string | null>(null);
-  const [isUsernameEdited, setIsUsernameEdited] = useState(false);
 
   const [form, setForm] = useState({
     full_name: "",
-    username: "",
     phone: "",
-    website: "",
     avatar_url: null as string | null,
   });
 
@@ -74,9 +58,7 @@ export default function EditProfile() {
 
     setForm({
       full_name: profile.full_name ?? "",
-      username: profile.username ?? "",
       phone: profile.phone ?? "",
-      website: profile.website ?? "",
       avatar_url: profile.avatar_url ?? null,
     });
   }, [profile]);
@@ -96,34 +78,15 @@ export default function EditProfile() {
     getAvatarSignedUrl(form.avatar_url).then(setAvatarUri);
   }, [form.avatar_url]);
 
-  /* ---------------- USERNAME AUTO-GENERATION ---------------- */
-  useEffect(() => {
-    if (!isUsernameEdited && form.full_name) {
-      setForm((p) => ({ ...p, username: generateUsername(p.full_name) }));
-    }
-  }, [form.full_name, isUsernameEdited]);
-
   /* ---------------- VALIDATION ---------------- */
   const errors = useMemo(() => {
     return {
       full_name:
-        form.full_name.trim().length === 0
-          ? "Full name is required"
-          : null,
-
-      username:
-        form.username && !usernameRegex.test(form.username)
-          ? "Username must be 3–20 characters (letters, numbers, _)"
-          : null,
+        form.full_name.trim().length === 0 ? "Full name is required" : null,
 
       phone:
         form.phone && !phoneRegex.test(form.phone)
           ? "Phone number must be 10 digits"
-          : null,
-
-      website:
-        form.website && !websiteRegex.test(form.website)
-          ? "Enter a valid website URL"
           : null,
     };
   }, [form]);
@@ -205,32 +168,7 @@ export default function EditProfile() {
           className="border border-gray-300 rounded-full px-5  bg-white"
         />
         {errors.full_name && (
-          <Text className="text-red-500 text-xs ml-4">
-            {errors.full_name}
-          </Text>
-        )}
-
-        {/* Username */}
-        <InputLabel>Username</InputLabel>
-        <TextInput
-          placeholder="Choose a username"
-          value={form.username}
-          onChangeText={(v) => {
-            setForm((p) => ({ ...p, username: v }));
-            setIsUsernameEdited(true);
-          }}
-          autoCapitalize="none"
-          className="border border-gray-300 rounded-full px-5  "
-        />
-        {!isUsernameEdited && form.full_name && (
-          <Text className="text-gray-400 ml-4 text-xs">
-            Suggested username: {generateUsername(form.full_name)}
-          </Text>
-        )}
-        {errors.username && (
-          <Text className="text-red-500 text-xs ml-4 mt-1">
-            {errors.username}
-          </Text>
+          <Text className="text-red-500 text-xs ml-4">{errors.full_name}</Text>
         )}
 
         {/* Phone */}
@@ -243,24 +181,7 @@ export default function EditProfile() {
           className="border border-gray-300 rounded-full px-5"
         />
         {errors.phone && (
-          <Text className="text-red-500 text-xs ml-4 mt-1">
-            {errors.phone}
-          </Text>
-        )}
-
-        {/* Website */}
-        <InputLabel>Website</InputLabel>
-        <TextInput
-          placeholder="https://example.com"
-          value={form.website}
-          onChangeText={(v) => setForm((p) => ({ ...p, website: v }))}
-          autoCapitalize="none"
-          className="border border-gray-300 rounded-full px-5"
-        />
-        {errors.website && (
-          <Text className="text-red-500 text-xs ml-4 mt-1">
-            {errors.website}
-          </Text>
+          <Text className="text-red-500 text-xs ml-4 mt-1">{errors.phone}</Text>
         )}
 
         {/* Save Button */}

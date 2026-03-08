@@ -6,7 +6,6 @@ import {
 } from "@/api/products";
 import Button from "@/components/Button";
 import ConfirmModal from "@/components/modal/ConfirmModal";
-import RemoteImage from "@/components/RemoteImage";
 import logger from "@/lib/logger";
 import { supabase } from "@/lib/supabase";
 import { defaultImage } from "@/utils/branding";
@@ -51,6 +50,7 @@ export default function CreateProductScreen() {
 
   const [open, setOpen] = useState(false);
   const [index, setIndex] = useState<number | null>(null);
+  const [imageUri, setImageUri] = useState<string | null>(null);
 
   const { id: idString } = useLocalSearchParams();
   const id = Number(typeof idString === "string" ? idString : idString?.[0]);
@@ -94,6 +94,22 @@ export default function CreateProductScreen() {
       setVariants((updatingProduct.variants || []).map(toVariant));
     }
   }, [updatingProduct]);
+
+  /* ---------------- IMAGE PREVIEW ---------------- */
+  useEffect(() => {
+    if (!image) {
+      setImageUri(null);
+      return;
+    }
+
+    if (image.startsWith("file://")) {
+      setImageUri(image);
+      return;
+    }
+
+    // For remote URLs, use as-is
+    setImageUri(image);
+  }, [image]);
 
   /* ---------------- VALIDATION ---------------- */
   const isNameValid = name.trim().length > 0;
@@ -287,27 +303,15 @@ export default function CreateProductScreen() {
 
         <View className="flex-1 px-6 bg-white">
           {/* IMAGE */}
-          <View className="self-center">
-            {isUpdating ? (
-              <RemoteImage
-                path={image && image.startsWith("http") ? image : undefined}
-                fallback={defaultImage}
-                className="w-56 h-56 rounded-3xl mt-8"
-              />
-            ) : (
-              <Image
-                source={{ uri: image || defaultImage }}
-                className="w-1/2 aspect-square self-center rounded-lg mt-8"
-              />
-            )}
-
-            <Text
-              onPress={pickImage}
-              className="text-primary font-semibold mt-3 mb-6 text-center"
-            >
-              Change product image
-            </Text>
-          </View>
+          <TouchableOpacity onPress={pickImage} className="self-center my-6">
+            <Image
+              source={imageUri ? { uri: imageUri } : { uri: defaultImage }}
+              className="w-32 h-32 rounded-full"
+            />
+            <View className="absolute bottom-0 right-0 bg-primary p-2 rounded-full">
+              <Ionicons name="camera" size={18} color="white" />
+            </View>
+          </TouchableOpacity>
 
           {/* NAME */}
           <Text className="text-sm mb-1">Product name</Text>

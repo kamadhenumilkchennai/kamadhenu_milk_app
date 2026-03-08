@@ -1,10 +1,10 @@
+import logger from "@/lib/logger";
 import { supabase } from "@/lib/supabase";
 import { LinearGradient } from "expo-linear-gradient";
-import { Link, Stack } from "expo-router";
+import { Link, Stack, useRouter } from "expo-router";
 import React, { useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -18,6 +18,7 @@ import {
 /* ---------------- REGEX ---------------- */
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const phoneRegex = /^[0-9]{10}$/;
 const upperCase = /[A-Z]/;
 const lowerCase = /[a-z]/;
 const number = /\d/;
@@ -25,13 +26,18 @@ const symbol = /[@$!%*?&#^()_+\-=[\]{};':"\\|,.<>/?]/;
 
 export default function SignUpScreen() {
   const [email, setEmail] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const router = useRouter();
 
   /* ---------------- VALIDATIONS ---------------- */
 
+  const isFullNameValid = fullName.trim().length > 0;
+  const isPhoneValid = phone.length === 10 && phoneRegex.test(phone);
   const isEmailValid = email.length === 0 || emailRegex.test(email);
   const isPasswordMatch =
     confirmPassword.length === 0 || password === confirmPassword;
@@ -46,7 +52,7 @@ export default function SignUpScreen() {
       number: number.test(password),
       symbol: symbol.test(password),
     }),
-    [password]
+    [password],
   );
 
   const passwordScore = Object.values(passwordRules).filter(Boolean).length;
@@ -62,7 +68,9 @@ export default function SignUpScreen() {
         : "bg-green-500";
 
   const isFormValid =
+    isFullNameValid &&
     emailRegex.test(email) &&
+    isPhoneValid &&
     passwordScore === 5 &&
     password === confirmPassword;
 
@@ -75,13 +83,52 @@ export default function SignUpScreen() {
     setError("");
     setLoading(true);
 
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
+    try {
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+            phone: phone,
+          },
+        },
+      });
 
-    if (error) Alert.alert(error.message);
-    setLoading(false);
+      if (authError) {
+        logger.error(authError.message);
+        setLoading(false);
+        return;
+      }
+
+      if (!authData.user) {
+        logger.error("User creation failed");
+        setLoading(false);
+        return;
+      }
+
+      // Update profile in database
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({
+          full_name: fullName,
+          phone: phone,
+        })
+        .eq("id", authData.user.id)
+        .select()
+        .single();
+
+      if (profileError) {
+        console.error("Profile update error:", profileError);
+        setLoading(false);
+        return;
+      }
+      router.replace("/(auth)/sign-in");
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -119,6 +166,47 @@ export default function SignUpScreen() {
 
             {/* FORM */}
             <View className="w-full gap-4 mt-6">
+              {/* FULL NAME */}
+              <View>
+                <TextInput
+                  value={fullName}
+                  onChangeText={setFullName}
+                  placeholder="Full name"
+                  placeholderTextColor="#9CA3AF"
+                  className={`border rounded-full px-5 py-3 bg-white ${
+                    fullName.length > 0 && !isFullNameValid
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  }`}
+                />
+                {fullName.length > 0 && !isFullNameValid && (
+                  <Text className="text-red-500 text-xs mt-1 ml-2">
+                    Full name is required
+                  </Text>
+                )}
+              </View>
+
+              {/* PHONE */}
+              <View>
+                <TextInput
+                  value={phone}
+                  onChangeText={setPhone}
+                  placeholder="10-digit phone number"
+                  // keyboardType="number-pad"
+                  placeholderTextColor="#9CA3AF"
+                  className={`border rounded-full px-5 py-3 bg-white ${
+                    phone.length > 0 && !isPhoneValid
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  }`}
+                />
+                {phone.length > 0 && !isPhoneValid && (
+                  <Text className="text-red-500 text-xs mt-1 ml-2">
+                    Phone number must be 10 digits
+                  </Text>
+                )}
+              </View>
+
               {/* EMAIL */}
               <View>
                 <TextInput
@@ -215,9 +303,9 @@ export default function SignUpScreen() {
               {/* SUBMIT */}
               <TouchableOpacity
                 onPress={signUpWithEmail}
-                disabled={loading}
+                disabled={!isFormValid || loading}
                 className={`rounded-full py-3 items-center ${
-                  loading ? "bg-gray-300" : "bg-black"
+                  !isFormValid || loading ? "bg-gray-300" : "bg-black"
                 }`}
               >
                 {loading ? (

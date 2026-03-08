@@ -1,8 +1,8 @@
 import { useMyProfile } from "@/api/profile";
 import GradientHeader from "@/components/GradientHeader";
-import { defaultImage, defaultProfileImage } from "@/utils/branding";
 import RemoteProfileImage from "@/components/RemoteProfileImage";
 import { supabase } from "@/lib/supabase";
+import { defaultProfileImage } from "@/utils/branding";
 import { Ionicons } from "@expo/vector-icons";
 import { Href, router } from "expo-router";
 import React from "react";
@@ -118,7 +118,7 @@ export default function ProfileScreen() {
                   {profile?.full_name || "User"}
                 </Text>
                 <Text className="text-text-secondary text-sm">
-                  @{profile?.username || "username"}
+                  {profile?.phone || "phone"}
                 </Text>
                 {profile?.group === "ADMIN" && (
                   <View className="self-start bg-red-100 px-3 py-1 rounded-full mt-1">
