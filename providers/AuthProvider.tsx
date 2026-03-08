@@ -78,7 +78,7 @@ export default function AuthProvider({ children }: PropsWithChildren) {
         return;
       }
 
-      logger.log("AuthProvider: profile", data);
+      // logger.log("AuthProvider: profile", data);
 
       setProfile(data ?? null);
     };
