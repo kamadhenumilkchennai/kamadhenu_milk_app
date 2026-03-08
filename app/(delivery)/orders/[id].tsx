@@ -3,6 +3,7 @@ import { useSubscriptionPauses } from "@/api/subscription";
 import { Plan } from "@/app/(user)/orders/[id]";
 import { OrderStatusList, statusColors } from "@/assets/data/types";
 import OrderAddressCard from "@/components/Address/OrderAddressCard";
+import GradientHeader from "@/components/GradientHeader";
 import OrderItemList from "@/components/OrderItemListItem";
 import OrderSummeryFooter, {
   DeliveryTime,
@@ -12,7 +13,7 @@ import { notifyUserAboutOrderUpdate } from "@/lib/notifications";
 import { generateBillHTML } from "@/utils/billTemplate";
 import { Ionicons } from "@expo/vector-icons";
 import * as Print from "expo-print";
-import { Stack, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import * as Sharing from "expo-sharing";
 import { useState } from "react";
 import {
@@ -130,9 +131,12 @@ export default function AdminOrderDetailScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <Stack.Screen options={{ title: `Order #${order.id}` }} />
+      <GradientHeader title={`Order #${order.id}`} />
 
-      <ScrollView className="p-4" contentContainerStyle={{ gap: 16, paddingBottom: 160 }}>
+      <ScrollView
+        className="p-4"
+        contentContainerStyle={{ gap: 16, paddingBottom: 160 }}
+      >
         {/* ADDRESS */}
         {order.addresses && <OrderAddressCard address={order.addresses} />}
 
@@ -173,7 +177,6 @@ export default function AdminOrderDetailScreen() {
           </Pressable>
         )}
 
-
         {/* 📍 View on Map */}
         {order.addresses?.latitude && order.addresses?.longitude && (
           <View className="bg-surface rounded-2xl overflow-hidden">
@@ -204,7 +207,6 @@ export default function AdminOrderDetailScreen() {
             </Pressable>
           </View>
         )}
-
 
         {/* ITEMS */}
         <OrderItemList items={order.order_items ?? []} />

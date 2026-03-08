@@ -1,6 +1,7 @@
 import { AdminOrder, useAdminOrderList } from "@/api/orders";
 import { useInsertOrderSubscription } from "@/api/orders/subscription";
 import { Tables } from "@/assets/data/types";
+import GradientHeader from "@/components/GradientHeader";
 import OrderListItem from "@/components/OrderListItem";
 import React, { useMemo, useState } from "react";
 import {
@@ -30,14 +31,41 @@ export default function AdminOrdersScreen() {
 
   useInsertOrderSubscription();
 
-  /* ---------------- DOWNLOAD TODAY DELIVERIES Helpers ---------------- */
-  const todayISO = () => new Date().toISOString().split("T")[0];
+  /* ---------------- DATE HELPERS ---------------- */
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const parseDate = (date: string) => {
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  };
+
+  const getSubscriptionEndDate = (startDate: string, planType: string) => {
+    const start = parseDate(startDate);
+    const end = new Date(start);
+
+    if (planType === "weekly") {
+      end.setDate(end.getDate() + 6);
+    } else if (planType === "monthly") {
+      end.setDate(end.getDate() + 29);
+    }
+
+    return end;
+  };
 
   const isPausedToday = (pauses: Tables<"subscription_pauses">[]) =>
-    pauses.some((p) => p.pause_date === todayISO());
+    pauses.some((p) => parseDate(p.pause_date).getTime() === today.getTime());
 
-  const isSubscriptionActiveToday = (subscription: Tables<"subscriptions">) =>
-    todayISO() >= subscription.start_date;
+  const isSubscriptionActiveToday = (subscription: Tables<"subscriptions">) => {
+    const start = parseDate(subscription.start_date);
+    const end = getSubscriptionEndDate(
+      subscription.start_date,
+      subscription.plan_type,
+    );
+
+    return today >= start && today <= end;
+  };
 
   /* ---------------- FILTER LOGIC ---------------- */
   const filteredOrders = useMemo(() => {
@@ -92,6 +120,7 @@ export default function AdminOrdersScreen() {
   /* ---------------- MAIN UI ---------------- */
   return (
     <View className="flex-1 bg-white">
+      <GradientHeader title="Orders" showBackButton={false} />
       {/* ---------------- FILTER BUTTONS ---------------- */}
       <View className="flex-row justify-around mx-4 my-4 bg-gray-100 rounded-full p-2">
         <FilterButton
