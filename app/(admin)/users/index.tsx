@@ -1,4 +1,5 @@
 import { useAdminUsers } from "@/api/profile";
+import GradientHeader from "@/components/GradientHeader";
 import UserRow from "@/components/UserRow";
 import { router } from "expo-router";
 import {
@@ -34,6 +35,8 @@ export default function AdminUsersScreen() {
   /* ---------------- MAIN UI ---------------- */
   return (
     <View className="flex-1 bg-background">
+      <GradientHeader title="Users" showBackButton={false} />
+
       <FlatList
         data={users}
         keyExtractor={(item) => item.id}
@@ -50,11 +53,6 @@ export default function AdminUsersScreen() {
             <UserRow user={item} />
           </TouchableOpacity>
         )}
-        ListEmptyComponent={
-          <View className="items-center mt-20">
-            <Text className="text-gray-500 text-lg">No users found</Text>
-          </View>
-        }
       />
     </View>
   );

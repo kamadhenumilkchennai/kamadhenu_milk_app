@@ -5,6 +5,7 @@ import {
   useUpdateProduct,
 } from "@/api/products";
 import Button from "@/components/Button";
+import GradientHeader from "@/components/GradientHeader";
 import ConfirmModal from "@/components/modal/ConfirmModal";
 import logger from "@/lib/logger";
 import { supabase } from "@/lib/supabase";
@@ -14,7 +15,7 @@ import { decode } from "base64-arraybuffer";
 import { randomUUID } from "expo-crypto";
 import * as FileSystem from "expo-file-system/legacy";
 import * as ImagePicker from "expo-image-picker";
-import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   Alert,
@@ -295,10 +296,8 @@ export default function CreateProductScreen() {
           backgroundColor: "white",
         }}
       >
-        <Stack.Screen
-          options={{
-            title: isUpdating ? "Update Product" : "Create Product",
-          }}
+        <GradientHeader
+          title={isUpdating ? "Update Product" : "Create Product"}
         />
 
         <View className="flex-1 px-6 bg-white">

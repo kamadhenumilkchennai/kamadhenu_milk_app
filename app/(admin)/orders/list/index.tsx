@@ -1,6 +1,7 @@
 import { AdminOrder, useAdminOrderList } from "@/api/orders";
 import { useInsertOrderSubscription } from "@/api/orders/subscription";
 import { Tables } from "@/assets/data/types";
+import GradientHeader from "@/components/GradientHeader";
 import OrderListItem from "@/components/OrderListItem";
 import React, { useMemo, useState } from "react";
 import {
@@ -119,6 +120,7 @@ export default function AdminOrdersScreen() {
   /* ---------------- MAIN UI ---------------- */
   return (
     <View className="flex-1 bg-white">
+      <GradientHeader title="Orders" showBackButton={false} />
       {/* ---------------- FILTER BUTTONS ---------------- */}
       <View className="flex-row justify-around mx-4 my-4 bg-gray-100 rounded-full p-2">
         <FilterButton
