@@ -3,45 +3,41 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Link, Stack } from "expo-router";
 import React, { useState } from "react";
 import {
-  ActivityIndicator,
-  Image,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Image,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
 /* ---------------- REGEX ---------------- */
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export default function SignInScreen() {
+export default function ForgotPasswordScreen() {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
 
   const [emailTouched, setEmailTouched] = useState(false);
-  const [passwordTouched, setPasswordTouched] = useState(false);
   const [submitAttempted, setSubmitAttempted] = useState(false);
 
   const isEmailValid = emailRegex.test(email);
-  const isPasswordValid = password.length > 0;
 
   const showEmailError = (emailTouched || submitAttempted) && !isEmailValid;
-  const showPasswordError =
-    (passwordTouched || submitAttempted) && !isPasswordValid;
 
-  const isFormValid = isEmailValid && isPasswordValid;
+  const isFormValid = isEmailValid;
 
-  async function signInWithEmail() {
+  async function handleForgotPassword() {
     setSubmitAttempted(true);
 
     if (!isFormValid) {
-      setError("Please fix the errors above");
+      setError("Please enter a valid email address");
       return;
     }
 
@@ -49,38 +45,20 @@ export default function SignInScreen() {
     setLoading(true);
 
     try {
-      // 1️⃣ Auth sign in
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+      // Send password reset email
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: "kamadhenu://reset-password",
       });
 
       if (error) throw error;
 
-      const userId = data.user.id;
-
-      // 2️⃣ Fetch profile status
-      const { data: profile, error: profileError } = await supabase
-        .from("profiles")
-        .select("is_active")
-        .eq("id", userId)
-        .single();
-
-      if (profileError) {
-        await supabase.auth.signOut();
-        throw new Error("Unable to verify user status");
-      }
-
-      // 3️⃣ Block inactive users
-      if (!profile.is_active) {
-        await supabase.auth.signOut();
-        throw new Error("You are inactive. Contact admin.");
-      }
-
-      // ✅ SUCCESS → router will auto-redirect via auth listener
+      setSuccess(true);
+      setEmail("");
+      setEmailTouched(false);
+      setSubmitAttempted(false);
     } catch (err: unknown) {
       const message =
-        (err as Error)?.message ?? String(err ?? "Sign in failed");
+        (err as Error)?.message ?? String(err ?? "Failed to send reset email");
       setError(message);
     } finally {
       setLoading(false);
@@ -111,7 +89,7 @@ export default function SignInScreen() {
           contentContainerStyle={{ flexGrow: 1 }}
         >
           <View className="flex-1 justify-center items-center px-8">
-            <Stack.Screen options={{ title: "Sign in" }} />
+            <Stack.Screen options={{ title: "Forgot Password" }} />
 
             {/* HERO IMAGE */}
             <Image
@@ -120,8 +98,17 @@ export default function SignInScreen() {
               resizeMode="contain"
             />
 
+            {/* HEADING */}
+            <Text className="text-2xl font-bold text-center text-gray-800 mt-4">
+              Reset Your Password
+            </Text>
+            <Text className="text-center text-gray-600 text-sm mt-2 px-2">
+              Enter your email address and we'll send you a link to reset your
+              password
+            </Text>
+
             {/* FORM */}
-            <View className="w-full gap-4 mt-6">
+            <View className="w-full gap-4 mt-8">
               {/* EMAIL */}
               <View>
                 <TextInput
@@ -134,6 +121,7 @@ export default function SignInScreen() {
                   autoCapitalize="none"
                   keyboardType="email-address"
                   placeholderTextColor="#9CA3AF"
+                  editable={!loading && !success}
                   className={`border rounded-full px-5 py-3 bg-white ${
                     showEmailError ? "border-red-500" : "border-gray-300"
                   }`}
@@ -145,70 +133,63 @@ export default function SignInScreen() {
                 )}
               </View>
 
-              {/* PASSWORD */}
-              <View>
-                <TextInput
-                  value={password}
-                  onChangeText={(text) => {
-                    setPassword(text);
-                    if (!passwordTouched) setPasswordTouched(true);
-                  }}
-                  placeholder="Password"
-                  secureTextEntry
-                  placeholderTextColor="#9CA3AF"
-                  className={`border rounded-full px-5 py-3 bg-white ${
-                    showPasswordError ? "border-red-500" : "border-gray-300"
-                  }`}
-                />
-                {showPasswordError && (
-                  <Text className="text-red-500 text-xs mt-1 ml-2">
-                    Password is required
-                  </Text>
-                )}
-              </View>
-
               {!!error && (
                 <Text className="text-red-500 text-sm text-center">
                   {error}
                 </Text>
               )}
 
-              {/* SIGN IN BUTTON */}
+              {success && (
+                <View className="bg-green-50 border border-green-200 rounded-lg px-4 py-3">
+                  <Text className="text-green-800 text-sm font-medium">
+                    ✓ Reset link sent!
+                  </Text>
+                  <Text className="text-green-700 text-xs mt-1">
+                    Check your email for password reset instructions.
+                  </Text>
+                </View>
+              )}
+
+              {/* RESET BUTTON */}
               <TouchableOpacity
-                onPress={signInWithEmail}
-                disabled={loading}
+                onPress={handleForgotPassword}
+                disabled={loading || success}
                 className={`rounded-full py-3 items-center ${
-                  loading ? "bg-gray-300" : "bg-black"
+                  loading || success ? "bg-gray-300" : "bg-black"
                 }`}
               >
                 {loading ? (
                   <ActivityIndicator color="#fff" />
                 ) : (
                   <Text className="text-white font-semibold text-base">
-                    Sign in
+                    Send Reset Link
                   </Text>
                 )}
               </TouchableOpacity>
 
-              <View className="flex-row justify-between mt-2">
-                {/* FORGOT PASSWORD */}
-                <Link
-                  href="/forgot-password"
-                  className="text-blue-600 font-medium "
+              {success && (
+                <TouchableOpacity
+                  onPress={() => {
+                    setSuccess(false);
+                    setError("");
+                  }}
+                  className="rounded-full py-3 items-center border border-black"
                 >
-                  Forgot password?
-                </Link>
-
-                {/* SIGN UP */}
-                <Link href="/sign-up" className="text-blue-600 font-medium">
-                  Create an account
-                </Link>
-              </View>
+                  <Text className="text-black font-semibold text-base">
+                    Send Another Link
+                  </Text>
+                </TouchableOpacity>
+              )}
             </View>
+
+            {/* BACK TO SIGN IN */}
+            <Link href="/sign-in" className="mt-6 text-blue-600 font-medium">
+              Back to Sign in
+            </Link>
 
             {/* FOOTER */}
             <Text className="text-center text-gray-500 text-xs mt-6 px-2">
-              By signing in, you agree to our{" "}
+              By continuing, you agree to our{" "}
               <Text className="text-blue-500">Terms</Text>,{" "}
               <Text className="text-blue-500">Privacy Policy</Text> and{" "}
               <Text className="text-blue-500">Cookie Use</Text>

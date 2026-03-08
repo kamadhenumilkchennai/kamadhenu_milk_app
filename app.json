@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "Kamadehnu Milk",
-    "slug": "milk_app",
+    "name": "Kamadhenu Milk",
+    "slug": "kamadhenumilkchennai",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/ios-light.png",
-    "scheme": "milkapp",
+    "scheme": "kamadhenu",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
 
@@ -64,7 +64,9 @@
     },
 
     "extra": {
-      "router": {},
+      "router": {
+        "origin": false
+      },
       "eas": {
         "projectId": "79451892-dd40-46a1-82d5-c08076a9c923"
       }
