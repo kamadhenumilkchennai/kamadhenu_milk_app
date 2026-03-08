@@ -70,29 +70,14 @@ export default function CreateProductScreen() {
   useEffect(() => {
     if (updatingProduct) {
       setName(updatingProduct.name);
-      setImage(updatingProduct.image);
-      const toVariant = (v: unknown): Variant => {
-        const obj = v as Record<string, unknown> | undefined;
-        return {
-          label: typeof obj?.label === "string" ? (obj.label as string) : "",
-          price:
-            typeof obj?.price === "number"
-              ? String(obj.price)
-              : typeof obj?.price === "string"
-                ? (obj.price as string)
-                : "",
-        };
-      };
-
-      setVariants((updatingProduct.variants || []).map(toVariant));
-    }
-  }, [updatingProduct]);
-
-  useEffect(() => {
-    if (updatingProduct) {
-      setName(updatingProduct.name);
-      setImage(updatingProduct.image);
+      // Only set image if it's a remote URL (from storage)
+      if (updatingProduct.image && updatingProduct.image.startsWith("http")) {
+        setImage(updatingProduct.image);
+      } else {
+        setImage(null);
+      }
       setDescription(updatingProduct.description ?? "");
+
       const toVariant = (v: unknown): Variant => {
         const obj = v as Record<string, unknown> | undefined;
         return {
@@ -131,6 +116,7 @@ export default function CreateProductScreen() {
 
     if (!result.canceled) {
       const file = result.assets[0];
+      const extension = file.uri.split(".").pop()?.toLowerCase();
 
       // Basic client-side validation
       if (file.fileSize && file.fileSize > MAX_UPLOAD_BYTES) {
@@ -138,28 +124,40 @@ export default function CreateProductScreen() {
         return;
       }
 
-      if (file.type && !ALLOWED_MIME.includes(file.type)) {
-        setError("Unsupported file type");
+      if (extension && !["png", "jpg", "jpeg", "webp"].includes(extension)) {
+        logger.error("Unsupported file extension:", extension);
+        setError("Please select a valid image file (PNG, JPG, JPEG, WebP)");
         return;
       }
 
+      setError("");
       setImage(file.uri);
     }
   };
 
   const uploadImage = async () => {
-    if (!image?.startsWith("file://")) return image;
+    // If image is already a remote URL (starts with http), return it as-is
+    if (image && !image.startsWith("file://")) {
+      return image;
+    }
+
+    // If no image selected, return null
+    if (!image) {
+      return null;
+    }
 
     const base64 = await FileSystem.readAsStringAsync(image, {
       encoding: "base64",
     });
 
-    const filePath = `${randomUUID()}.png`;
+    const extension = image.split(".").pop()?.toLowerCase() || "jpg";
+    const filePath = `${randomUUID()}.${extension}`;
+    const mimeType = extension === "jpg" ? "image/jpeg" : `image/${extension}`;
 
     const { data, error } = await supabase.storage
       .from("product-images")
       .upload(filePath, decode(base64), {
-        contentType: "image/png",
+        contentType: mimeType,
       });
 
     if (error) {
@@ -167,14 +165,13 @@ export default function CreateProductScreen() {
       throw error;
     }
 
-    if (!data || !data.path) {
-      logger.error("CreateProduct: upload returned no data", data);
+    if (!data?.path) {
+      logger.error("CreateProduct: upload returned no data");
       throw new Error("Upload failed");
     }
 
     return data.path;
   };
-
   /* ---------------- VARIANT ACTIONS ---------------- */
   const addVariant = () => {
     setVariants([...variants, { label: "", price: "" }]);
@@ -213,12 +210,34 @@ export default function CreateProductScreen() {
       };
 
       if (isUpdating) {
-        updateProduct({ id, ...payload }, { onSuccess: () => router.back() });
+        updateProduct(
+          { id, ...payload },
+          {
+            onSuccess: () => {
+              Alert.alert("Success", "Product updated successfully");
+              router.back();
+            },
+            onError: (error) => {
+              logger.error("Update product failed", error);
+              Alert.alert("Error", "Failed to update product");
+            },
+          },
+        );
       } else {
-        insertProduct(payload, { onSuccess: () => router.back() });
+        insertProduct(payload, {
+          onSuccess: () => {
+            Alert.alert("Success", "Product created successfully");
+            router.back();
+          },
+          onError: (error) => {
+            logger.error("Create product failed", error);
+            Alert.alert("Error", "Failed to create product");
+          },
+        });
       }
-    } catch {
-      setError("Image upload failed");
+    } catch (err) {
+      logger.error("Image upload failed", err);
+      Alert.alert("Error", "Image upload failed");
     }
   };
 
@@ -230,7 +249,16 @@ export default function CreateProductScreen() {
         text: "Delete",
         style: "destructive",
         onPress: () =>
-          deleteProduct(id, { onSuccess: () => router.replace("/(admin)") }),
+          deleteProduct(id, {
+            onSuccess: () => {
+              Alert.alert("Deleted", "Product deleted successfully");
+              // router.replace("/(admin)");
+            },
+            onError: (error) => {
+              logger.error("Delete product failed", error);
+              Alert.alert("Error", "Failed to delete product");
+            },
+          }),
       },
     ]);
   };
@@ -262,7 +290,7 @@ export default function CreateProductScreen() {
           <View className="self-center">
             {isUpdating ? (
               <RemoteImage
-                path={image ?? undefined}
+                path={image && image.startsWith("http") ? image : undefined}
                 fallback={defaultImage}
                 className="w-56 h-56 rounded-3xl mt-8"
               />
@@ -302,13 +330,10 @@ export default function CreateProductScreen() {
           />
 
           {/* VARIANTS */}
-          <Text className="text-lg font-bold mb-3">Variants</Text>
+          <Text className="text-sm mb-1">Variants</Text>
 
           {variants.map((variant, index) => (
-            <View
-              key={`${variant.label}-${index}`}
-              className="flex-row items-center gap-3 mb-3"
-            >
+            <View key={index} className="flex-row items-center gap-3 mb-3">
               <TextInput
                 value={variant.label}
                 onChangeText={(text) => {

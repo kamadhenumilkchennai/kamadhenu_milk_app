@@ -61,7 +61,6 @@ export const useInsertProduct = () => {
           image: data.image,
           description: data.description,
           variants: data.variants,
-          price: null, // legacy column
         })
         .select()
         .single();
