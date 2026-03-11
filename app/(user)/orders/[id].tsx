@@ -24,7 +24,7 @@ import {
 } from "react-native";
 
 export type Plan = "weekly" | "monthly";
-export type DeliveryTime = "morning" | "evening";
+export type DeliveryTime = "morning";
 
 export default function OrderDetailsScreen() {
   /* ---------------- PARAMS ---------------- */
@@ -193,7 +193,7 @@ export default function OrderDetailsScreen() {
           )}
 
           {/* Generate Bill */}
-          <TouchableOpacity
+          {/* <TouchableOpacity
             disabled={generatingBill}
             onPress={handleGenerateBill}
             className={`flex-1 py-3 rounded-lg ${
@@ -203,7 +203,7 @@ export default function OrderDetailsScreen() {
             <Text className="text-white text-center font-semibold">
               {generatingBill ? "Generating Bill..." : "Generate Bill"}
             </Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
 
         {subscription && (

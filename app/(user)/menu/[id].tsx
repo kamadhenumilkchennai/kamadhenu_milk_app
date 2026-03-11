@@ -7,13 +7,14 @@ import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import {
-    ActivityIndicator,
-    Pressable,
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function ProductDetailsScreen() {
   const { id: isString } = useLocalSearchParams();
@@ -24,6 +25,8 @@ export default function ProductDetailsScreen() {
   const router = useRouter();
 
   const [selectedVariantLabel, setSelectedVariantLabel] = useState<string>();
+  const [quantity, setQuantity] = useState(1);
+  const insets = useSafeAreaInsets();
 
   // Automatically select the first variant when product data loads
   useEffect(() => {
@@ -35,8 +38,6 @@ export default function ProductDetailsScreen() {
   const selectedVariant = useMemo(() => {
     return product?.variants.find((v) => v.label === selectedVariantLabel);
   }, [product, selectedVariantLabel]);
-
-  const [quantity, setQuantity] = useState(1);
 
   const addToCart = () => {
     if (!product || !selectedVariant) return;
@@ -127,7 +128,15 @@ export default function ProductDetailsScreen() {
       </ScrollView>
 
       {/* BOTTOM BAR */}
-      <View className="absolute bottom-20 left-0 right-0 bg-background px-6 py-4 border-t border-background-subtle">
+      <View
+        style={{
+          position: "absolute",
+          left: 0,
+          right: 0,
+          bottom: insets.bottom + 50, // pushes above tab bar
+        }}
+        className="bg-background px-6 py-4 border-t border-background-subtle"
+      >
         <View className="flex-row items-center">
           <View className="flex-1">
             <Text className="text-sm">Total</Text>

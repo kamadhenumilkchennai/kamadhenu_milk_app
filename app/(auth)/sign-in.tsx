@@ -156,7 +156,7 @@ export default function SignInScreen() {
                   placeholder="Password"
                   secureTextEntry
                   placeholderTextColor="#9CA3AF"
-                  className={`border rounded-full px-5 py-3 bg-white ${
+                  className={`border rounded-full px-5 py-3 bg-white text-black ${
                     showPasswordError ? "border-red-500" : "border-gray-300"
                   }`}
                 />

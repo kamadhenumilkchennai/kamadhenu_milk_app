@@ -16,6 +16,7 @@ import {
 import { useInsertAddress } from "@/api/addresses";
 import { useAuth } from "@/providers/AuthProvider";
 import { useLocationContext } from "@/providers/LocationProvider";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type Props = {
   visible: boolean;
@@ -51,6 +52,7 @@ export default function AddressFormModal({
 
   const [submitAttempted, setSubmitAttempted] = useState(false);
   const insertAddress = useInsertAddress();
+  const insets = useSafeAreaInsets();
 
   const flatError = submitAttempted && !flat.trim();
   const nameError = submitAttempted && !name.trim();
@@ -128,7 +130,10 @@ export default function AddressFormModal({
       <TouchableWithoutFeedback onPress={onClose}>
         <View className="flex-1 justify-end bg-black/40">
           <TouchableWithoutFeedback>
-            <View className="bg-background rounded-t-3xl h-[50%] relative">
+            <View
+              className="bg-background rounded-t-3xl relative"
+              style={{ height: "85%" }}
+            >
               {/* CLOSE */}
               <Pressable
                 onPress={onClose}
@@ -147,7 +152,7 @@ export default function AddressFormModal({
               {/* CONTENT */}
               <ScrollView
                 className="px-5 py-4"
-                contentContainerStyle={{ paddingBottom: 140 }}
+                contentContainerStyle={{ paddingBottom: 200 }}
                 showsVerticalScrollIndicator={false}
               >
                 <Text className="text-text-secondary mb-3">
@@ -240,7 +245,10 @@ export default function AddressFormModal({
               </ScrollView>
 
               {/* FOOTER */}
-              <View className="px-5 py-4 border-t border-surface-border absolute bottom-0 w-full bg-background">
+              <View
+                className="px-5 pt-4 border-t border-surface-border absolute bottom-0 w-full bg-background"
+                style={{ paddingBottom: insets.bottom + 16 }}
+              >
                 <TouchableOpacity
                   activeOpacity={0.9}
                   disabled={loading}

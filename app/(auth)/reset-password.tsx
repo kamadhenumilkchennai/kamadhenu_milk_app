@@ -201,7 +201,7 @@ export default function ResetPasswordScreen() {
                 secureTextEntry
                 placeholderTextColor="#9CA3AF"
                 editable={!loading && !success && validToken}
-                className="border border-gray-300 rounded-full px-5 py-3 bg-white"
+                className="border border-gray-300 rounded-full px-5 py-3 bg-white text-black"
               />
 
               {/* PASSWORD STRENGTH */}
@@ -251,7 +251,7 @@ export default function ResetPasswordScreen() {
                   secureTextEntry
                   placeholderTextColor="#9CA3AF"
                   editable={!loading && !success && validToken}
-                  className={`border rounded-full px-5 py-3 bg-white ${
+                  className={`border rounded-full px-5 py-3 bg-white text-black ${
                     !isPasswordMatch ? "border-red-500" : "border-gray-300"
                   }`}
                 />

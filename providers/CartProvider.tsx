@@ -5,7 +5,13 @@ import { Tables } from "@/assets/data/types";
 import { supabase } from "@/lib/supabase";
 import { randomUUID } from "expo-crypto";
 import { useRouter } from "expo-router";
-import { PropsWithChildren, createContext, useContext, useMemo, useState } from "react";
+import {
+  PropsWithChildren,
+  createContext,
+  useContext,
+  useMemo,
+  useState,
+} from "react";
 import { useAuth } from "./AuthProvider";
 
 export type Product = Tables<"products">;
@@ -26,7 +32,7 @@ export type CartItem = {
 export type SubscriptionData = {
   plan: "weekly" | "monthly";
   startDate: string;
-  deliveryTime: "morning" | "evening";
+  deliveryTime: "morning";
 };
 
 type CartType = {
@@ -35,7 +41,10 @@ type CartType = {
   updateQuantity: (itemId: string, amount: -1 | 1) => void;
   removeItem: (itemId: string) => void;
   total: number;
-  checkout: (address: Tables<"addresses">, subscription?: SubscriptionData | null) => void;
+  checkout: (
+    address: Tables<"addresses">,
+    subscription?: SubscriptionData | null,
+  ) => void;
   isCheckingOut: boolean;
 };
 
@@ -61,7 +70,8 @@ export const CartProvider = ({ children }: PropsWithChildren) => {
   /* ---------------- ADD ITEM ---------------- */
   const addItem = (product: Product, size: ProductVariant, quantity = 1) => {
     const existingItem = items.find(
-      (item) => item.product_id === product.id && item.size.label === size.label
+      (item) =>
+        item.product_id === product.id && item.size.label === size.label,
     );
 
     if (existingItem) {
@@ -69,8 +79,8 @@ export const CartProvider = ({ children }: PropsWithChildren) => {
         prev.map((item) =>
           item.id === existingItem.id
             ? { ...item, quantity: item.quantity + quantity }
-            : item
-        )
+            : item,
+        ),
       );
       return;
     }
@@ -92,9 +102,11 @@ export const CartProvider = ({ children }: PropsWithChildren) => {
     setItems((prev) =>
       prev
         .map((item) =>
-          item.id === itemId ? { ...item, quantity: item.quantity + amount } : item
+          item.id === itemId
+            ? { ...item, quantity: item.quantity + amount }
+            : item,
         )
-        .filter((item) => item.quantity > 0)
+        .filter((item) => item.quantity > 0),
     );
   };
 
@@ -106,81 +118,80 @@ export const CartProvider = ({ children }: PropsWithChildren) => {
   /* ---------------- TOTAL ---------------- */
   const total = useMemo(
     () => items.reduce((sum, item) => sum + item.size.price * item.quantity, 0),
-    [items]
+    [items],
   );
 
   const clearCart = () => setItems([]);
 
   /* ---------------- CHECKOUT ---------------- */
-const checkout = async (
-  address: Tables<"addresses">,
-  subscription?: SubscriptionData | null
-) => {
-  if (!items.length || isCheckingOut || !profile) return;
+  const checkout = async (
+    address: Tables<"addresses">,
+    subscription?: SubscriptionData | null,
+  ) => {
+    if (!items.length || isCheckingOut || !profile) return;
 
-  setIsCheckingOut(true);
+    setIsCheckingOut(true);
 
-  try {
-    let subscriptionId: number | null = null;
+    try {
+      let subscriptionId: number | null = null;
 
-    // 1️⃣ Insert subscription
-    if (subscription) {
-      const { data, error } = await supabase
-        .from("subscriptions")
-        .insert({
-          plan_type: subscription.plan,
-          start_date: subscription.startDate,
-          delivery_time: subscription.deliveryTime,
-          user_id: profile.id,
-        })
-        .select("id")
-        .single();
+      // 1️⃣ Insert subscription
+      if (subscription) {
+        const { data, error } = await supabase
+          .from("subscriptions")
+          .insert({
+            plan_type: subscription.plan,
+            start_date: subscription.startDate,
+            delivery_time: subscription.deliveryTime,
+            user_id: profile.id,
+          })
+          .select("id")
+          .single();
 
-      if (error) throw error;
-      subscriptionId = data.id;
+        if (error) throw error;
+        subscriptionId = data.id;
+      }
+
+      // 2️⃣ Calculate totals
+      const dailyTotal = items.reduce(
+        (sum, item) => sum + item.size.price * item.quantity,
+        0,
+      );
+
+      const finalTotal = subscription
+        ? subscription.plan === "weekly"
+          ? dailyTotal * 7
+          : dailyTotal * 30
+        : dailyTotal;
+
+      // 3️⃣ Insert order
+      const order = await insertOrder({
+        total: finalTotal,
+        address_id: address.id,
+        subscription_id: subscriptionId,
+      });
+
+      if (!order?.id) throw new Error("Order ID missing");
+
+      // 4️⃣ Insert order items
+      await insertOrderItems(
+        items.map((item) => ({
+          order_id: order.id,
+          product_id: item.product_id,
+          quantity: item.quantity,
+          variant_label: item.size.label,
+          variant_price: item.size.price,
+        })),
+      );
+
+      clearCart();
+      router.replace(`/(user)/orders/${order.id}`);
+    } catch (err) {
+      console.error("Checkout failed:", err);
+    } finally {
+      setIsCheckingOut(false);
     }
-
-    // 2️⃣ Calculate totals
-    const dailyTotal = items.reduce(
-      (sum, item) => sum + item.size.price * item.quantity,
-      0
-    );
-
-    const finalTotal = subscription
-      ? subscription.plan === "weekly"
-        ? dailyTotal * 7
-        : dailyTotal * 30
-      : dailyTotal;
-
-    // 3️⃣ Insert order
-    const order = await insertOrder({
-      total: finalTotal,
-      address_id: address.id,
-      subscription_id: subscriptionId,
-    });
-
-    if (!order?.id) throw new Error("Order ID missing");
-
-    // 4️⃣ Insert order items
-    await insertOrderItems(
-      items.map((item) => ({
-        order_id: order.id,
-        product_id: item.product_id,
-        quantity: item.quantity,
-        variant_label: item.size.label,
-        variant_price: item.size.price,
-      }))
-    );
-
-    clearCart();
-    router.replace(`/(user)/orders/${order.id}`);
-  } catch (err) {
-    console.error("Checkout failed:", err);
-  } finally {
-    setIsCheckingOut(false);
-  }
-};
-
+  };
 
   return (
     <CartContext.Provider

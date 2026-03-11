@@ -25,10 +25,6 @@ const BRAND_NAME = BRANDING.name;
 
 /* -------------------------------- HELPERS -------------------------------- */
 
-/**
- * Converts number to Indian currency words
- * Example: 1234.50 → Rupees One Thousand Two Hundred Thirty Four and Fifty Paise Only
- */
 const numberToWords = (amount: number) => {
   const a = [
     "",
@@ -97,7 +93,7 @@ export const generateBillHTML = ({
   order,
   itemsTotal,
   deliveryCharge,
-  skippedDates = [], // Array of skipped dates as strings "YYYY-MM-DD"
+  skippedDates = [],
 }: {
   order: OrderWithRelations;
   itemsTotal: number;
@@ -113,10 +109,11 @@ export const generateBillHTML = ({
   const days =
     plan && plan in PLAN_DAYS ? PLAN_DAYS[plan as "weekly" | "monthly"] : 1;
 
-  const skippedDaysCount = skippedDates.length; // Number of skipped days
-  const effectiveDays = days - skippedDaysCount; // Days to charge
-  const subscriptionItemsTotal = itemsTotal * effectiveDays; // subtotal after skip
-  const skipAmount = itemsTotal * skippedDaysCount; // amount to subtract
+  const skippedDaysCount = skippedDates.length;
+  const effectiveDays = days - skippedDaysCount;
+
+  const subscriptionItemsTotal = itemsTotal * effectiveDays;
+  const skipAmount = itemsTotal * skippedDaysCount;
   const oneTimeTotal = itemsTotal;
 
   const grandTotal = isSubscribed
@@ -132,179 +129,292 @@ export const generateBillHTML = ({
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8" />
-  <style>
-    body { font-family: Arial, sans-serif; padding: 24px; font-size: 14px; color: #111; }
-    .header { display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #ddd; padding-bottom:12px; }
-    .brand { display:flex; align-items:center; gap:12px; }
-    .brand img { height:48px; }
-    .brand-name { font-size:20px; font-weight:bold; }
-    .section { margin-top:20px; }
-    table { width:100%; border-collapse:collapse; margin-top:10px; }
-    th, td { border:1px solid #ddd; padding:8px; }
-    th { background:#f5f5f5; text-align:left; }
-    .right { text-align:right; }
-    .bold { font-weight:bold; }
-    .muted { color:#666; font-size:12px; }
-    .footer { margin-top:50px; display:flex; justify-content:flex-end; }
-    .signature { text-align:center; }
-    .signature img { height:50px; margin-bottom:6px; }
-  </style>
+<meta charset="utf-8" />
+<style>
+body {
+  font-family: Arial, sans-serif;
+  padding: 24px;
+  font-size: 14px;
+  color: #111;
+}
+
+.header {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  border-bottom:2px solid #ddd;
+  padding-bottom:12px;
+}
+
+.brand {
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.brand img {
+  height:48px;
+}
+
+.brand-name {
+  font-size:20px;
+  font-weight:bold;
+}
+
+.section {
+  margin-top:20px;
+}
+
+table {
+  width:100%;
+  border-collapse:collapse;
+  margin-top:10px;
+}
+
+th, td {
+  border:1px solid #ddd;
+  padding:8px;
+}
+
+th {
+  background:#f5f5f5;
+  text-align:left;
+}
+
+.right {
+  text-align:right;
+}
+
+.bold {
+  font-weight:bold;
+}
+
+.muted {
+  color:#666;
+  font-size:12px;
+}
+
+.payment-box {
+  border:1px solid #ddd;
+  padding:12px;
+  border-radius:8px;
+  background:#fafafa;
+}
+
+.footer {
+  margin-top:50px;
+  display:flex;
+  justify-content:flex-end;
+}
+
+.signature {
+  text-align:center;
+}
+
+.signature img {
+  height:50px;
+  margin-bottom:6px;
+}
+</style>
 </head>
+
 <body>
 
-  <!-- HEADER -->
-  <div class="header">
-    <div class="brand">
-      <img src="${BRAND_LOGO}" />
-      <div class="brand-name">${BRAND_NAME}</div>
-    </div>
-    <div class="muted">
-      <div><strong>Order ID:</strong> ${order.id}</div>
-      <div><strong>Order Date:</strong> ${orderDate.toDateString()}</div>
-      <div><strong>Bill Date:</strong> ${billDate.toDateString()}</div>
-    </div>
+<!-- HEADER -->
+<div class="header">
+  <div class="brand">
+    <img src="${BRAND_LOGO}" />
+    <div class="brand-name">${BRAND_NAME}</div>
   </div>
 
-  <!-- USER DETAILS -->
-  <div class="section">
-    <h3>User Details</h3>
-    <p>
-      <strong>Name:</strong> ${user?.full_name ?? "-"}<br/>
-      <strong>Phone:</strong> ${user?.phone ?? "-"}
-    </p>
+  <div class="muted">
+    <div><strong>Order ID:</strong> ${order.id}</div>
+    <div><strong>Order Date:</strong> ${orderDate.toDateString()}</div>
+    <div><strong>Bill Date:</strong> ${billDate.toDateString()}</div>
   </div>
+</div>
 
-  <!-- ADDRESS -->
-  <div class="section">
-    <h3>Delivery Address</h3>
-    <p>
-      ${address?.name ?? ""}<br/>
-      ${address?.flat ?? ""} ${address?.floor ?? ""}<br/>
-      ${address?.area ?? ""}<br/>
-      ${address?.landmark ?? ""}<br/>
-      Phone: ${address?.phone ?? ""}
-    </p>
-  </div>
+<!-- USER -->
+<div class="section">
+<h3>User Details</h3>
+<p>
+<strong>Name:</strong> ${user?.full_name ?? "-"}<br/>
+<strong>Phone:</strong> ${user?.phone ?? "-"}
+</p>
+</div>
 
-  ${
-    isSubscribed
-      ? `
-  <div class="section">
-    <h3>Subscription Details</h3>
-    <table>
-      <tr><td>Plan</td><td class="bold">${plan}</td></tr>
-      <tr><td>Duration</td><td class="bold">${days} days</td></tr>
-      <tr><td>Start Date</td><td class="bold">${order.subscription!.start_date}</td></tr>
-      <tr><td>Delivery Time</td><td class="bold">${order.subscription!.delivery_time ?? "-"}</td></tr>
-    </table>
-  </div>
-  `
-      : ""
-  }
+<!-- ADDRESS -->
+<div class="section">
+<h3>Delivery Address</h3>
+<p>
+${address?.name ?? ""}<br/>
+${address?.flat ?? ""} ${address?.floor ?? ""}<br/>
+${address?.area ?? ""}<br/>
+${address?.landmark ?? ""}<br/>
+Phone: ${address?.phone ?? ""}
+</p>
+</div>
 
-  <!-- ITEMS -->
-  <div class="section">
-    <h3>Items</h3>
-    <table>
-      <tr>
-        <th>Product</th>
-        <th>Variant</th>
-        <th>Qty</th>
-        <th class="right">Price</th>
-        <th class="right">Total</th>
-      </tr>
+${
+  isSubscribed
+    ? `
+<div class="section">
+<h3>Subscription Details</h3>
+<table>
+<tr><td>Plan</td><td class="bold">${plan}</td></tr>
+<tr><td>Duration</td><td class="bold">${days} days</td></tr>
+<tr><td>Start Date</td><td class="bold">${order.subscription!.start_date}</td></tr>
+<tr><td>Delivery Time</td><td class="bold">${order.subscription!.delivery_time ?? "-"}</td></tr>
+</table>
+</div>
+`
+    : ""
+}
 
-      ${order.order_items
-        .map((item) => {
-          const lineTotal = (item.variant_price ?? 0) * item.quantity;
-          return `
-      <tr>
-        <td>${item.products?.name ?? "Unknown Product"}</td>
-        <td>${item.variant_label ?? "-"}</td>
-        <td>${item.quantity}</td>
-        <td class="right">₹ ${item.variant_price.toFixed(2)}</td>
-        <td class="right">₹ ${lineTotal.toFixed(2)}</td>
-      </tr>`;
-        })
-        .join("")}
-    </table>
-  </div>
+<!-- ITEMS -->
+<div class="section">
+<h3>Items</h3>
 
-  <!-- SUMMARY -->
-  <div class="section">
-    <h3>Summary</h3>
-    <table>
-      ${
-        isSubscribed
-          ? `
-      <tr>
-        <td>Items Total (per day)</td>
-        <td class="right bold">₹ ${itemsTotal.toFixed(2)}</td>
-      </tr>
-      <tr>
-        <td>Items × ${days} days</td>
-        <td class="right bold">₹ ${(itemsTotal * days).toFixed(2)}</td>
-      </tr>
-      <tr>
-        <td>Skipped Days (${skippedDaysCount})</td>
-        <td class="right bold">- ₹ ${skipAmount.toFixed(2)}</td>
-      </tr>
-      <tr>
-        <td>Items × ${effectiveDays} days (after skipped)</td>
-        <td class="right bold">₹ ${subscriptionItemsTotal.toFixed(2)}</td>
-      </tr>
-      <tr>
-        <td>Skipped Dates</td>
-        <td class="right bold">
-          ${
-            skippedDates?.length > 0
-              ? skippedDates
-                  .map((d) =>
-                    new Date(d).toLocaleDateString("en-GB", {
-                      day: "numeric",
-                      month: "short",
-                    })
-                  )
-                  .join(", ")
-              : "-"
-          }
-        </td>
-      </tr>
-      `
-          : `
-      <tr>
-        <td>Items Total</td>
-        <td class="right bold">₹ ${oneTimeTotal.toFixed(2)}</td>
-      </tr>
-      `
-      }
+<table>
+<tr>
+<th>Product</th>
+<th>Variant</th>
+<th>Qty</th>
+<th class="right">Price</th>
+<th class="right">Total</th>
+</tr>
 
-      <tr>
-        <td>Delivery Charge</td>
-        <td class="right bold">₹ ${deliveryCharge.toFixed(2)}</td>
-      </tr>
+${order.order_items
+  .map((item) => {
+    const lineTotal = (item.variant_price ?? 0) * item.quantity;
 
-      <tr>
-        <th>Total</th>
-        <th class="right">₹ ${grandTotal.toFixed(2)}</th>
-      </tr>
+    return `
+<tr>
+<td>${item.products?.name ?? "Unknown Product"}</td>
+<td>${item.variant_label ?? "-"}</td>
+<td>${item.quantity}</td>
+<td class="right">₹ ${item.variant_price.toFixed(2)}</td>
+<td class="right">₹ ${lineTotal.toFixed(2)}</td>
+</tr>`;
+  })
+  .join("")}
 
-      <tr>
-        <td colspan="2" class="bold">
-          Amount in Words: ${amountInWords}
-        </td>
-      </tr>
-    </table>
-  </div>
+</table>
+</div>
 
-  <!-- SIGNATURE -->
-  <div class="footer">
-    <div class="signature">
-      <img src="${SIGNATURE_IMAGE}" />
-      <div class="bold">Authorized Signatory</div>
-    </div>
-  </div>
+<!-- SUMMARY -->
+<div class="section">
+<h3>Summary</h3>
+
+<table>
+
+${
+  isSubscribed
+    ? `
+<tr>
+<td>Items Total (per day)</td>
+<td class="right bold">₹ ${itemsTotal.toFixed(2)}</td>
+</tr>
+
+<tr>
+<td>Items × ${days} days</td>
+<td class="right bold">₹ ${(itemsTotal * days).toFixed(2)}</td>
+</tr>
+
+<tr>
+<td>Skipped Days (${skippedDaysCount})</td>
+<td class="right bold">- ₹ ${skipAmount.toFixed(2)}</td>
+</tr>
+
+<tr>
+<td>Items × ${effectiveDays} days (after skipped)</td>
+<td class="right bold">₹ ${subscriptionItemsTotal.toFixed(2)}</td>
+</tr>
+
+<tr>
+<td>Skipped Dates</td>
+<td class="right bold">
+${
+  skippedDates?.length > 0
+    ? skippedDates
+        .map((d) =>
+          new Date(d).toLocaleDateString("en-GB", {
+            day: "numeric",
+            month: "short",
+          }),
+        )
+        .join(", ")
+    : "-"
+}
+</td>
+</tr>
+`
+    : `
+<tr>
+<td>Items Total</td>
+<td class="right bold">₹ ${oneTimeTotal.toFixed(2)}</td>
+</tr>
+`
+}
+
+<tr>
+<td>Delivery Charge</td>
+<td class="right bold">₹ ${deliveryCharge.toFixed(2)}</td>
+</tr>
+
+<tr>
+<th>Total</th>
+<th class="right">₹ ${grandTotal.toFixed(2)}</th>
+</tr>
+
+<tr>
+<td colspan="2" class="bold">
+Amount in Words: ${amountInWords}
+</td>
+</tr>
+
+</table>
+</div>
+
+<!-- PAYMENT DETAILS -->
+<div class="section payment-box">
+<h3>Payment Details</h3>
+
+<table>
+<tr>
+<td>Bank</td>
+<td class="bold">Kotak Mahindra Bank</td>
+</tr>
+
+<tr>
+<td>Branch</td>
+<td class="bold">Mylapore</td>
+</tr>
+
+<tr>
+<td>Account Number</td>
+<td class="bold">0349217893</td>
+</tr>
+
+<tr>
+<td>IFSC Code</td>
+<td class="bold">KKBK0008487</td>
+</tr>
+
+<tr>
+<td>Google Pay</td>
+<td class="bold">9941213565</td>
+</tr>
+</table>
+</div>
+
+<!-- SIGNATURE -->
+<div class="footer">
+<div class="signature">
+<img src="${SIGNATURE_IMAGE}" />
+<div class="bold">Authorized Signatory</div>
+</div>
+</div>
 
 </body>
 </html>

@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import { Text, View } from "react-native";
 
 export type SubscriptionPlan = "weekly" | "monthly" | null;
-export type DeliveryTime = "morning" | "evening" | null;
+export type DeliveryTime = "morning" | null;
 
 export type OrderBillFooterProps = {
   itemsTotal: number;

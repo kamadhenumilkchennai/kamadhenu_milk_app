@@ -115,8 +115,7 @@ export default function AdminOrderDetailScreen() {
       : null;
 
   const deliveryTime: DeliveryTime | null =
-    order.subscription?.delivery_time === "morning" ||
-    order.subscription?.delivery_time === "evening"
+    order.subscription?.delivery_time === "morning" 
       ? order.subscription.delivery_time
       : null;
 
@@ -141,7 +140,7 @@ export default function AdminOrderDetailScreen() {
         {order.addresses && <OrderAddressCard address={order.addresses} />}
 
         {/* 🔽 ADMIN BILL DOWNLOAD */}
-        <TouchableOpacity
+        {/* <TouchableOpacity
           disabled={generatingBill}
           onPress={handleGenerateBill}
           className={`py-3 rounded-xl ${
@@ -151,7 +150,7 @@ export default function AdminOrderDetailScreen() {
           <Text className="text-white text-center font-semibold">
             {generatingBill ? "Generating Bill..." : "Download Bill"}
           </Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         {/* SUBSCRIPTION */}
         {order.subscription && (

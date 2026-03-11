@@ -14,6 +14,7 @@ import { formatDate } from "@/lib/date-format";
 import { formatPhone } from "@/lib/utils";
 import { useCart } from "@/providers/CartProvider";
 import { useLocationContext } from "@/providers/LocationProvider";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { DeliveryTime, Plan } from "./orders/[id]";
 
 const today = new Date().toISOString().split("T")[0];
@@ -55,6 +56,7 @@ export default function CartScreen() {
   const [startDate, setStartDate] = useState(tomorrow);
 
   const [hasChanges, setHasChanges] = useState(false);
+  const insets = useSafeAreaInsets();
 
   /* ---------------- HELPERS ---------------- */
   const resetSubscription = () => {
@@ -195,7 +197,15 @@ export default function CartScreen() {
       />
 
       {/* CHECKOUT BAR */}
-      <View className="absolute bottom-0 left-0 right-0 pt-2 pb-24 px-6 bg-background">
+      <View
+        style={{
+          position: "absolute",
+          left: 0,
+          right: 0,
+          bottom: insets.bottom + 50, // pushes above tab bar
+        }}
+        className="bg-background px-6 py-4 border-t border-background-subtle"
+      >
         <View className="mb-3 bg-background-muted p-4 rounded-xl">
           <View className="flex-row justify-between">
             <Text>Deliver to</Text>
@@ -265,7 +275,7 @@ export default function CartScreen() {
 
             {/* DELIVERY TIME */}
             <View className="flex-row gap-3">
-              {(["morning", "evening"] as const).map((t) => (
+              {(["morning"] as const).map((t) => (
                 <TouchableOpacity
                   key={t}
                   onPress={() => {

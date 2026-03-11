@@ -115,8 +115,7 @@ export default function AdminOrderDetailScreen() {
       : null;
 
   const deliveryTime: DeliveryTime | null =
-    order.subscription?.delivery_time === "morning" ||
-    order.subscription?.delivery_time === "evening"
+    order.subscription?.delivery_time === "morning" 
       ? order.subscription.delivery_time
       : null;
 

@@ -1,24 +1,22 @@
 import { useAuth } from "@/providers/AuthProvider";
 import { Ionicons } from "@expo/vector-icons";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { BlurView } from "expo-blur";
 import { Redirect, Tabs } from "expo-router";
 import React from "react";
-import { StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 function TabBarIcon(props: {
   name: React.ComponentProps<typeof FontAwesome>["name"];
   color: string;
 }) {
-  return <FontAwesome size={20} style={{ marginBottom: 0 }} {...props} />;
+  return <FontAwesome size={20} {...props} />;
 }
 
 export default function TabLayout() {
   const { session, loading } = useAuth();
   const insets = useSafeAreaInsets();
 
-  if (loading) return null; // ⬅️ WAIT
+  if (loading) return null;
 
   if (!session) {
     return <Redirect href="/(auth)/sign-in" />;
@@ -27,33 +25,41 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
+        headerShown: false,
         tabBarActiveTintColor: "#1DB954",
         tabBarInactiveTintColor: "#B3B3B3",
+
         tabBarStyle: {
           position: "absolute",
-          borderColor: "transparent",
           borderTopWidth: 0,
-          height: 50 + insets.bottom,
-          paddingTop: 4,
-          marginHorizontal: 100,
-          marginBottom: 24 + insets.bottom,
+
+          height: 50, // ✅ increased height
+
+          marginHorizontal: 80,
           borderRadius: 24,
           overflow: "hidden",
           elevation: 0,
+
+          bottom: insets.bottom + 10,
+
+          paddingBottom: 6, // ✅ fixed
+
+          shadowColor: "#000",
+          shadowOpacity: 0.25,
+          shadowRadius: 10,
+          shadowOffset: { width: 0, height: 4 },
         },
-        tabBarBackground: () => (
-          <BlurView
-            intensity={80}
-            tint="dark"
-            style={StyleSheet.absoluteFill}
-          />
-        ),
+
+        tabBarItemStyle: {
+          justifyContent: "center",
+          alignItems: "center",
+        },
+
         tabBarLabelStyle: {
           fontSize: 10,
           fontWeight: "600",
           marginTop: -3,
         },
-        headerShown: false,
       }}
     >
       <Tabs.Screen name="index" options={{ href: null }} />
@@ -63,7 +69,6 @@ export default function TabLayout() {
         name="menu"
         options={{
           title: "Menu",
-          headerShown: false,
           tabBarIcon: ({ color }) => (
             <Ionicons name="apps" size={20} color={color} />
           ),
@@ -73,7 +78,6 @@ export default function TabLayout() {
         name="orders"
         options={{
           title: "Orders",
-          headerShown: false,
           tabBarIcon: ({ color }) => <TabBarIcon name="list" color={color} />,
         }}
       />

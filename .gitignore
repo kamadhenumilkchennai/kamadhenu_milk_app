@@ -44,3 +44,5 @@ yarn-error.*
 
 
 readme.md
+SUPABASE_RLS_POLICIES.md
+lib/supabase.ts

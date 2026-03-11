@@ -234,7 +234,7 @@ export default function SignUpScreen() {
                 placeholder="Password"
                 secureTextEntry
                 placeholderTextColor="#9CA3AF"
-                className="border border-gray-300 rounded-full px-5 py-3 bg-white"
+                className="border border-gray-300 rounded-full px-5 py-3 bg-white text-black"
               />
 
               {/* PASSWORD STRENGTH */}
@@ -283,7 +283,7 @@ export default function SignUpScreen() {
                   placeholder="Confirm password"
                   secureTextEntry
                   placeholderTextColor="#9CA3AF"
-                  className={`border rounded-full px-5 py-3 bg-white ${
+                  className={`border rounded-full px-5 py-3 bg-white text-black ${
                     !isPasswordMatch ? "border-red-500" : "border-gray-300"
                   }`}
                 />

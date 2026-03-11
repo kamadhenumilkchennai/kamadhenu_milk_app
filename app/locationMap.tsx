@@ -5,15 +5,16 @@ import { Ionicons } from "@expo/vector-icons";
 import * as Location from "expo-location";
 import { useEffect, useRef, useState } from "react";
 import {
-    Keyboard,
-    KeyboardAvoidingView,
-    Platform,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import MapView, { Marker } from "react-native-maps";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 /* 🔎 Search suggestion type */
 type SearchSuggestion = {
@@ -33,6 +34,7 @@ export default function LocationMapScreen() {
 
   const mapRef = useRef<MapView>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const insets = useSafeAreaInsets();
 
   const [pin, setPin] = useState(
     currentLocation ?? { latitude: 13.0397, longitude: 80.2793 },
@@ -229,7 +231,12 @@ export default function LocationMapScreen() {
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         keyboardVerticalOffset={80}
-        className="absolute bottom-4 left-0 right-0"
+        style={{
+          position: "absolute",
+          left: 0,
+          right: 0,
+          bottom: insets.bottom + 12, // ✅ prevents overlap
+        }}
       >
         <View className="px-4 gap-3">
           {/* 📍 CURRENT LOCATION */}

@@ -1,12 +1,15 @@
 {
   "expo": {
-    "name": "Kamadhenu Milk",
-    "slug": "kamadhenumilkchennai",
+    "name": "kamadhenu-milk",
+    "slug": "kamadhenu-milk",
+    "owner": "kamadhenumilk.chennai",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/ios-light.png",
     "scheme": "kamadhenu",
     "userInterfaceStyle": "automatic",
+
+    "jsEngine": "hermes",
     "newArchEnabled": true,
 
     "splash": {
@@ -21,23 +24,19 @@
 
     "android": {
       "package": "com.amitbaskey99.milk_app",
-
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#16a34a"
       },
-
       "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"],
-
       "config": {
         "googleMaps": {
           "apiKey": "YOUR_GOOGLE_MAPS_API_KEY"
         }
       },
-
+      "softwareKeyboardLayoutMode": "resize",
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false,
-      "softwareKeyboardLayoutMode": "resize"
+      "predictiveBackGestureEnabled": false
     },
 
     "web": {
@@ -46,15 +45,20 @@
       "favicon": "./assets/images/favicon.png"
     },
 
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+
+    "assetBundlePatterns": ["**/*"],
+
     "plugins": [
       "expo-router",
       "expo-secure-store",
       "expo-web-browser",
-
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "Allow Milk App to access your location to find delivery address"
+          "locationAlwaysAndWhenInUsePermission": "Allow Kamadhenu Milk App to access your location to find delivery address"
         }
       ]
     ],
@@ -68,7 +72,7 @@
         "origin": false
       },
       "eas": {
-        "projectId": "79451892-dd40-46a1-82d5-c08076a9c923"
+        "projectId": "68f95acd-6e31-453a-b48d-be75fd76fecf"
       }
     }
   }

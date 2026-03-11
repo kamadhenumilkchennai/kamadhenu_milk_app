@@ -4,12 +4,11 @@ import { Stack } from "expo-router";
 import { useEffect } from "react";
 import "../global.css";
 
-import AuthProvider from "@/providers/AuthProvider";
+import AuthProvider, { useAuth } from "@/providers/AuthProvider";
 import CartProvider from "@/providers/CartProvider";
 import NotificationProvider from "@/providers/NotificationProvider";
 import QueryProvider from "@/providers/QueryProvider";
 
-import OfflineBanner from "@/components/OfflineBanner";
 import { LocationProvider } from "@/providers/LocationProvider";
 import { NetworkProvider } from "@/providers/NetworkProvider";
 import {
@@ -44,7 +43,7 @@ function RootLayoutNav() {
   const colorScheme = useColorScheme();
 
   return (
-    <ThemeProvider value={colorScheme === "light" ? DarkTheme : DefaultTheme}>
+    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <AuthProvider>
         <InnerNav />
       </AuthProvider>
@@ -54,14 +53,15 @@ function RootLayoutNav() {
 
 function InnerNav() {
   // delay rendering the rest of the app until auth finishes initializing
-  const { loading } = require("@/providers/AuthProvider").useAuth();
+
+  const { loading } = useAuth();
 
   if (loading) return null;
 
   return (
     <QueryProvider>
       <NetworkProvider>
-        <OfflineBanner />
+        {/* <OfflineBanner /> */}
         <NotificationProvider>
           <LocationProvider>
             <CartProvider>
