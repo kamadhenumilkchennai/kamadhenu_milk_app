@@ -4,7 +4,7 @@ const path = require("path");
 
 const config = getDefaultConfig(__dirname);
 
-config.resolver.alias = {
+config.resolver.extraNodeModules = {
   "@": path.resolve(__dirname),
 };
 
