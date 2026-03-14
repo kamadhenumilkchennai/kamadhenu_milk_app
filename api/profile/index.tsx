@@ -45,7 +45,7 @@ export const getAvatarSignedUrl = async (path: string) => {
 
 export const uploadAvatar = async (
   fileUri: string,
-  userId: string
+  userId: string,
 ): Promise<string> => {
   const base64 = await FileSystem.readAsStringAsync(fileUri, {
     encoding: "base64",

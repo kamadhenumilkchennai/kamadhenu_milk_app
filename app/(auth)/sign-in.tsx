@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { Link, Stack } from "expo-router";
 import React, { useState } from "react";
@@ -27,6 +28,7 @@ export default function SignInScreen() {
   const [emailTouched, setEmailTouched] = useState(false);
   const [passwordTouched, setPasswordTouched] = useState(false);
   const [submitAttempted, setSubmitAttempted] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const isEmailValid = emailRegex.test(email);
   const isPasswordValid = password.length > 0;
@@ -147,19 +149,34 @@ export default function SignInScreen() {
 
               {/* PASSWORD */}
               <View>
-                <TextInput
-                  value={password}
-                  onChangeText={(text) => {
-                    setPassword(text);
-                    if (!passwordTouched) setPasswordTouched(true);
-                  }}
-                  placeholder="Password"
-                  secureTextEntry
-                  placeholderTextColor="#9CA3AF"
-                  className={`border rounded-full px-5 py-3 bg-white text-black ${
+                <View
+                  className={`flex-row items-center border rounded-full px-5 py-1 bg-white ${
                     showPasswordError ? "border-red-500" : "border-gray-300"
                   }`}
-                />
+                >
+                  <TextInput
+                    value={password}
+                    onChangeText={(text) => {
+                      setPassword(text);
+                      if (!passwordTouched) setPasswordTouched(true);
+                    }}
+                    placeholder="Password"
+                    secureTextEntry={!showPassword}
+                    placeholderTextColor="#9CA3AF"
+                    className="flex-1 py-3 text-black"
+                  />
+
+                  <TouchableOpacity
+                    onPress={() => setShowPassword(!showPassword)}
+                  >
+                    <Ionicons
+                      name={showPassword ? "eye-off-outline" : "eye-outline"}
+                      size={22}
+                      color="#6B7280"
+                    />
+                  </TouchableOpacity>
+                </View>
+
                 {showPasswordError && (
                   <Text className="text-red-500 text-xs mt-1 ml-2">
                     Password is required

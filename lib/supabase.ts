@@ -1,21 +1,12 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createClient } from "@supabase/supabase-js";
-import * as SecureStore from "expo-secure-store";
 import "react-native-url-polyfill/auto";
 import { Database } from "./database.types";
-import { SUPABASE_ANON_KEY, SUPABASE_URL } from "./env-config";
+// import { SUPABASE_ANON_KEY, SUPABASE_URL } from "./env-config";
 
-const ExpoSecureStoreAdapter = {
-  getItem: (key: string) => {
-    return SecureStore.getItemAsync(key);
-  },
-  setItem: (key: string, value: string) => {
-    SecureStore.setItemAsync(key, value);
-  },
-  removeItem: (key: string) => {
-    SecureStore.deleteItemAsync(key);
-  },
-};
+const SUPABASE_URL = "https://ozvixkxjoffiydpujosc.supabase.co";
+const SUPABASE_ANON_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im96dml4a3hqb2ZmaXlkcHVqb3NjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3MjYwODUsImV4cCI6MjA4ODMwMjA4NX0.liUli7Mgp3h1VAbAS-p2eEk3lwoMK1k3d3bYRKZpsM4";
 
 export const supabase = createClient<Database>(
   SUPABASE_URL,

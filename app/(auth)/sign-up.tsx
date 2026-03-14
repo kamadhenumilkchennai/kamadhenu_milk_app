@@ -1,5 +1,6 @@
 import logger from "@/lib/logger";
 import { supabase } from "@/lib/supabase";
+import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { Link, Stack, useRouter } from "expo-router";
 import React, { useMemo, useState } from "react";
@@ -32,6 +33,8 @@ export default function SignUpScreen() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const router = useRouter();
 
   /* ---------------- VALIDATIONS ---------------- */
@@ -228,14 +231,27 @@ export default function SignUpScreen() {
               </View>
 
               {/* PASSWORD */}
-              <TextInput
-                value={password}
-                onChangeText={setPassword}
-                placeholder="Password"
-                secureTextEntry
-                placeholderTextColor="#9CA3AF"
-                className="border border-gray-300 rounded-full px-5 py-3 bg-white text-black"
-              />
+              <View className="flex-row items-center border border-gray-300 rounded-full px-5 py-1 bg-white">
+                <TextInput
+                  value={password}
+                  onChangeText={setPassword}
+                  placeholder="Password"
+                  secureTextEntry={!showPassword}
+                  placeholderTextColor="#9CA3AF"
+                  className="flex-1 py-3 text-black"
+                />
+
+                <TouchableOpacity
+                  onPress={() => setShowPassword(!showPassword)}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                >
+                  <Ionicons
+                    name={showPassword ? "eye-off-outline" : "eye-outline"}
+                    size={22}
+                    color="#6B7280"
+                  />
+                </TouchableOpacity>
+              </View>
 
               {/* PASSWORD STRENGTH */}
               {password.length > 0 && (
@@ -277,16 +293,33 @@ export default function SignUpScreen() {
 
               {/* CONFIRM PASSWORD */}
               <View>
-                <TextInput
-                  value={confirmPassword}
-                  onChangeText={setConfirmPassword}
-                  placeholder="Confirm password"
-                  secureTextEntry
-                  placeholderTextColor="#9CA3AF"
-                  className={`border rounded-full px-5 py-3 bg-white text-black ${
+                <View
+                  className={`flex-row items-center border rounded-full px-5 py-1 bg-white ${
                     !isPasswordMatch ? "border-red-500" : "border-gray-300"
                   }`}
-                />
+                >
+                  <TextInput
+                    value={confirmPassword}
+                    onChangeText={setConfirmPassword}
+                    placeholder="Confirm password"
+                    secureTextEntry={!showConfirmPassword}
+                    placeholderTextColor="#9CA3AF"
+                    className="flex-1 py-3 text-black"
+                  />
+
+                  <TouchableOpacity
+                    onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  >
+                    <Ionicons
+                      name={
+                        showConfirmPassword ? "eye-off-outline" : "eye-outline"
+                      }
+                      size={22}
+                      color="#6B7280"
+                    />
+                  </TouchableOpacity>
+                </View>
                 {!isPasswordMatch && (
                   <Text className="text-red-500 text-xs mt-1 ml-2">
                     Passwords do not match
