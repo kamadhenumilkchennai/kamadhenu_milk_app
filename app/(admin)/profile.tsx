@@ -1,6 +1,6 @@
 import GradientHeader from "@/components/GradientHeader";
 import RemoteProfileImage from "@/components/RemoteProfileImage";
-import { supabase } from "../../lib/supabase";
+import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/providers/AuthProvider";
 import { defaultImage } from "@/utils/branding";
 import { Ionicons } from "@expo/vector-icons";
