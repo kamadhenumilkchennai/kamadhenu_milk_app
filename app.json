@@ -1,34 +1,35 @@
 {
   "expo": {
     "name": "kamadhenu-milk",
-    "slug": "kamadhenu-milk",
-    "owner": "kamadhenumilk.chennai",
+    "slug": "kamadhenumilktn",
+    "owner": "kamadhenumilktn",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/ios-light.png",
     "scheme": "kamadhenu",
     "userInterfaceStyle": "automatic",
-
     "jsEngine": "hermes",
     "newArchEnabled": true,
-
     "splash": {
       "image": "./assets/images/splash-icon-light.png",
       "resizeMode": "contain",
       "backgroundColor": "#16a34a"
     },
-
     "ios": {
       "supportsTablet": true
     },
-
     "android": {
       "package": "com.amitbaskey99.milk_app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#16a34a"
       },
-      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"],
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ],
       "config": {
         "googleMaps": {
           "apiKey": "AIzaSyC-V8gPSf8L786Vv2hC6gVab_2Du635a9o"
@@ -38,19 +39,17 @@
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
     },
-
     "web": {
       "bundler": "metro",
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
-
     "updates": {
       "fallbackToCacheTimeout": 0
     },
-
-    "assetBundlePatterns": ["**/*"],
-
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "plugins": [
       "expo-router",
       "expo-secure-store",
@@ -62,17 +61,15 @@
         }
       ]
     ],
-
     "experiments": {
       "typedRoutes": true
     },
-
     "extra": {
       "router": {
         "origin": false
       },
       "eas": {
-        "projectId": "68f95acd-6e31-453a-b48d-be75fd76fecf"
+        "projectId": "d76f678a-17c4-4902-9e2c-098f46644ae2"
       }
     }
   }

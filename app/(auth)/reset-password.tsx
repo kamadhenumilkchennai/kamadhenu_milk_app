@@ -3,15 +3,15 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Link, Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import {
-    ActivityIndicator,
-    Image,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 /* ---------------- REGEX ---------------- */
@@ -31,12 +31,12 @@ export default function ResetPasswordScreen() {
 
   const [submitAttempted, setSubmitAttempted] = useState(false);
   const router = useRouter();
-  const { token, type } = useLocalSearchParams();
+  const { token_hash, type } = useLocalSearchParams();
 
   /* ✅ Verify reset token on mount */
   useEffect(() => {
     const verifyToken = async () => {
-      if (!token || type !== "recovery") {
+      if (!token_hash || type !== "recovery") {
         setError("Invalid or expired reset link. Please request a new one.");
         return;
       }
@@ -44,7 +44,7 @@ export default function ResetPasswordScreen() {
       try {
         // Exchange the token for a session using token hash
         const { error: sessionError } = await supabase.auth.verifyOtp({
-          token_hash: String(token),
+          token_hash: String(token_hash),
           type: "recovery",
         });
 
@@ -62,7 +62,7 @@ export default function ResetPasswordScreen() {
     };
 
     verifyToken();
-  }, [token, type]);
+  }, [token_hash, type]);
 
   /* ---------------- PASSWORD RULES ---------------- */
 

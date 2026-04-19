@@ -3,12 +3,14 @@ import { useUpdateOrderSubscription } from "@/api/orders/subscription";
 import { useSubscriptionPauses } from "@/api/subscription";
 import OrderAddressCard from "@/components/Address/OrderAddressCard";
 import GradientHeader from "@/components/GradientHeader";
+import OfflineBanner from "@/components/OfflineBanner";
 import OrderItemList from "@/components/OrderItemListItem";
 import { normalizeStatus, statusColorMap } from "@/components/OrderListItem";
 import OrderSummeryFooter from "@/components/OrderSummeryFooter";
 import OrderSubscriptionDetailsCard from "@/components/subscription/OrderSubscriptionDetailsCard";
 import SkipDeliveryModal from "@/components/subscription/SkipDeliveryModal";
 import { getSubscriptionEndDate } from "@/lib/date-format";
+import { useNetwork } from "@/providers/NetworkProvider";
 import { generateBillHTML } from "@/utils/billTemplate";
 import * as Print from "expo-print";
 import { useLocalSearchParams } from "expo-router";
@@ -35,6 +37,8 @@ export default function OrderDetailsScreen() {
   const [skipOpen, setSkipOpen] = useState(false);
 
   const [generatingBill, setGeneratingBill] = useState(false);
+
+    const { isConnected } = useNetwork();
 
   /* ---------------- DATA ---------------- */
   const { data: order, isLoading, error } = useOrderDetails(orderId);
@@ -154,6 +158,9 @@ export default function OrderDetailsScreen() {
       </View>
     );
   }
+    if (!isConnected) {
+      return <OfflineBanner />;
+    }
 
   /* ---------------- MAIN UI ---------------- */
   return (

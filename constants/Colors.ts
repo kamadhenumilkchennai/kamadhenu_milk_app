@@ -18,4 +18,3 @@ export default {
   },
 };
 
-// kitabi dekhi sari, milini na koi sayari ! tarife kru kaise, yahi hai muskil mari

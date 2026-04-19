@@ -409,12 +409,12 @@ Amount in Words: ${amountInWords}
 </div>
 
 <!-- SIGNATURE -->
-<div class="footer">
-<div class="signature">
-<img src="${SIGNATURE_IMAGE}" />
-<div class="bold">Authorized Signatory</div>
-</div>
-</div>
+// <div class="footer">
+// <div class="signature">
+// <img src="${SIGNATURE_IMAGE}" />
+// <div class="bold">Authorized Signatory</div>
+// </div>
+// </div>
 
 </body>
 </html>
