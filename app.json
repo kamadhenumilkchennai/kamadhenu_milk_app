@@ -1,9 +1,9 @@
 {
   "expo": {
-    "name": "kamadhenu-milk",
+    "name": "Kamadhenu Milk",
     "slug": "kamadhenumilktn",
     "owner": "kamadhenumilktn",
-    "version": "1.0.0",
+    "version": "1.0.4",
     "orientation": "portrait",
     "icon": "./assets/images/ios-light.png",
     "scheme": "kamadhenu",
@@ -19,7 +19,8 @@
       "supportsTablet": true
     },
     "android": {
-      "package": "com.amitbaskey99.milk_app",
+      "package": "in.kamadhenumilk.app",
+      "versionCode": 4,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#16a34a"
@@ -27,8 +28,7 @@
       "permissions": [
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",
-        "android.permission.ACCESS_COARSE_LOCATION",
-        "android.permission.ACCESS_FINE_LOCATION"
+        "CAMERA"
       ],
       "config": {
         "googleMaps": {
@@ -47,9 +47,7 @@
     "updates": {
       "fallbackToCacheTimeout": 0
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "plugins": [
       "expo-router",
       "expo-secure-store",
@@ -58,6 +56,12 @@
         "expo-location",
         {
           "locationAlwaysAndWhenInUsePermission": "Allow Kamadhenu Milk App to access your location to find delivery address"
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Kamadhenu Milk App to use camera for QR scanning and uploading images"
         }
       ]
     ],
