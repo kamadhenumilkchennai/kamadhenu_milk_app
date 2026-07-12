@@ -1,10 +1,12 @@
 import AddressFormModal from "@/components/Address/AddressFormModal";
 import OverlayHeader from "@/components/OverlayHeader";
+import { isWithinChennai } from "@/constants/location";
 import { useLocationContext } from "@/providers/LocationProvider";
 import { Ionicons } from "@expo/vector-icons";
 import * as Location from "expo-location";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
+  Alert,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
@@ -44,6 +46,38 @@ export default function LocationMapScreen() {
   const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
   const [addressFormVisible, setAddressFormVisible] = useState(false);
 
+  const updatePin = useCallback(
+    (
+      coords: {
+        latitude: number;
+        longitude: number;
+      },
+      regionDelta = 0.005,
+    ) => {
+      if (!isWithinChennai(coords.latitude, coords.longitude)) {
+        Alert.alert(
+          "Outside Service Area",
+          "Currently we deliver only within Chennai city.",
+        );
+        return false;
+      }
+
+      setPin(coords);
+
+      mapRef.current?.animateToRegion(
+        {
+          ...coords,
+          latitudeDelta: regionDelta,
+          longitudeDelta: regionDelta,
+        },
+        500,
+      );
+
+      return true;
+    },
+    [],
+  );
+
   /* ✅ SINGLE SOURCE OF TRUTH — PIN ➜ ADDRESS */
   useEffect(() => {
     let active = true;
@@ -51,6 +85,7 @@ export default function LocationMapScreen() {
     const updateAddressFromPin = async () => {
       try {
         const [geo] = await Location.reverseGeocodeAsync(pin);
+
         if (!geo || !active) return;
 
         const label = [
@@ -83,10 +118,20 @@ export default function LocationMapScreen() {
     };
 
     updateAddressFromPin();
+
     return () => {
       active = false;
     };
   }, [pin]);
+
+  // Clean up the debounce timer
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+    };
+  }, []);
 
   /* 🔎 Search with suggestions */
   const onSearchChange = (text: string) => {
@@ -143,43 +188,25 @@ export default function LocationMapScreen() {
       longitude: item.longitude,
     };
 
-    setPin(coords); // ✅ ONLY THIS
+    if (!updatePin(coords, 0.01)) return;
 
     setSearchText("");
     setSuggestions([]);
     Keyboard.dismiss();
-
-    mapRef.current?.animateToRegion(
-      {
-        ...coords,
-        latitudeDelta: 0.01,
-        longitudeDelta: 0.01,
-      },
-      500,
-    );
   };
 
   /* 🎯 Go to current location */
   const goToCurrentLocation = async () => {
     const { status } = await Location.requestForegroundPermissionsAsync();
+
     if (status !== "granted") return;
 
     const loc = await Location.getCurrentPositionAsync({});
-    const coords = {
+
+    updatePin({
       latitude: loc.coords.latitude,
       longitude: loc.coords.longitude,
-    };
-
-    setPin(coords);
-
-    mapRef.current?.animateToRegion(
-      {
-        ...coords,
-        latitudeDelta: 0.005,
-        longitudeDelta: 0.005,
-      },
-      500,
-    );
+    });
   };
 
   return (
@@ -222,7 +249,9 @@ export default function LocationMapScreen() {
           latitudeDelta: 0.005,
           longitudeDelta: 0.005,
         }}
-        onPress={(e) => setPin(e.nativeEvent.coordinate)}
+        onPress={(e) => {
+          updatePin(e.nativeEvent.coordinate);
+        }}
       >
         <Marker coordinate={pin} />
       </MapView>
