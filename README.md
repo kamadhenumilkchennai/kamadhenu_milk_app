@@ -1,37 +1,34 @@
-# milk_delivery_app
-Milk for all, health for life.
+# Expo google authentication
+In your Expo project, you would handle the login like this:
 
 
-npm i baseline-browser-mapping@latest -D
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import { supabase } from './lib/supabase';
 
-# Product Info
-list of products:
-{
-  "Milk": {
-    "500ml": rs. 45,
-    "1L": rs. 85
-  },
-  "Ghee": {
-    "500g": rs. 650,
-    "1000g": rs. 1300
-  },
-  "Butter": {
-    "500g": rs. 600,
-    "1000g": rs. 1200
-  },
-  "Paneer": {
-    "200g": rs.130
-  },
-  "CurdLassi": {
-    "500ml": rs. 65
-  },
-  "GroundnutOil": {
-    "1L": rs. 300
-  },
-  "CoconutOil": {
-    "1L": rs. 350
+GoogleSignin.configure({
+  webClientId: 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com', // From Google Console
+});
+
+async function signInWithGoogle() {
+  try {
+    await GoogleSignin.hasPlayServices();
+    const userInfo = await GoogleSignin.signIn();
+    
+    if (userInfo.data?.idToken) {
+      const { data, error } = await supabase.auth.signInWithIdToken({
+        provider: 'google',
+        token: userInfo.data.idToken,
+      });
+      
+      if (error) throw error;
+      console.log("Logged in!", data.user);
+    }
+  } catch (error) {
+    console.error("Google Sign-In Error:", error);
   }
 }
+
+npm i baseline-browser-mapping@latest -D
 
 # deploy to expo
 ✅ SOLUTION 3 (Nuclear but works)

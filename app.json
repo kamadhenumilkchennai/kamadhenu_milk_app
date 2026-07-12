@@ -3,7 +3,7 @@
     "name": "Kamadhenu Milk",
     "slug": "kamadhenumilktn",
     "owner": "kamadhenumilktn",
-    "version": "1.0.4",
+    "version": "1.0.9",
     "orientation": "portrait",
     "icon": "./assets/images/ios-light.png",
     "scheme": "kamadhenu",
@@ -20,7 +20,7 @@
     },
     "android": {
       "package": "in.kamadhenumilk.app",
-      "versionCode": 4,
+      "versionCode": 9,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#16a34a"

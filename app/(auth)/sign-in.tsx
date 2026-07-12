@@ -1,7 +1,9 @@
-import { supabase } from "@/lib/supabase";
+import { supabase, directAuth, fetchProfileDirect } from "@/lib/supabase";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { Link, Stack } from "expo-router";
+import NetInfo from "@react-native-community/netinfo";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
@@ -51,40 +53,57 @@ export default function SignInScreen() {
     setLoading(true);
 
     try {
-      // 1️⃣ Auth sign in
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+      // 0️⃣ Check network connectivity first
+      const netState = await NetInfo.fetch();
+      if (!netState.isConnected) {
+        setError(
+          "No internet connection. Please check your WiFi or mobile data.",
+        );
+        setLoading(false);
+        return;
+      }
+
+      console.log(
+        "Network type:",
+        netState.type,
+        "Connected:",
+        netState.isConnected,
+      );
+
+      // Use direct auth instead of Supabase client (bypasses client issues on mobile)
+      const authData = await directAuth(email, password, 5);
+      console.log("✅ Auth successful, now checking profile...");
+
+      // Store session token
+      await AsyncStorage.setItem("auth_token", authData.access_token);
+
+      // Fetch profile with retry
+      const profile = await fetchProfileDirect(
+        authData.user.id,
+        authData.access_token,
+        3,
+      );
+
+      // Check if user is active
+      if (!profile.is_active) {
+        setError("You are inactive. Contact admin.");
+        setLoading(false);
+        return;
+      }
+
+      // Update Supabase session for future use
+      await supabase.auth.setSession({
+        access_token: authData.access_token,
+        refresh_token: authData.refresh_token,
       });
 
-      if (error) throw error;
-
-      const userId = data.user.id;
-
-      // 2️⃣ Fetch profile status
-      const { data: profile, error: profileError } = await supabase
-        .from("profiles")
-        .select("is_active")
-        .eq("id", userId)
-        .single();
-
-      if (profileError) {
-        await supabase.auth.signOut();
-        throw new Error("Unable to verify user status");
-      }
-
-      // 3️⃣ Block inactive users
-      if (!profile.is_active) {
-        await supabase.auth.signOut();
-        throw new Error("You are inactive. Contact admin.");
-      }
-
-      // ✅ SUCCESS → router will auto-redirect via auth listener
+      console.log("✅ Sign-in successful!");
+      setLoading(false);
     } catch (err: unknown) {
       const message =
         (err as Error)?.message ?? String(err ?? "Sign in failed");
+      console.error("🔴 Final error:", message);
       setError(message);
-    } finally {
       setLoading(false);
     }
   }

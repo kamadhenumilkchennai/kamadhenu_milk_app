@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useMemo, useState } from "react";
 import { FlatList, Modal, Text, TouchableOpacity, View } from "react-native";
@@ -43,6 +44,7 @@ const addDays = (date: string, days: number) => {
 export default function CartScreen() {
   const { items, total, checkout, isCheckingOut } = useCart();
   const { selectedAddress } = useLocationContext();
+  const router = useRouter();
 
   const [locationModalVisible, setLocationModalVisible] = useState(false);
 
@@ -57,6 +59,11 @@ export default function CartScreen() {
 
   const [hasChanges, setHasChanges] = useState(false);
   const insets = useSafeAreaInsets();
+
+  /* ---------------- ORDER CONFIRMATION STATE ---------------- */
+  const [confirmationModalVisible, setConfirmationModalVisible] =
+    useState(false);
+  const [orderId, setOrderId] = useState<string | null>(null);
 
   /* ---------------- HELPERS ---------------- */
   const resetSubscription = () => {
@@ -120,13 +127,18 @@ export default function CartScreen() {
   }, [plan, startDate]);
 
   /* ---------------- CHECKOUT ---------------- */
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     if (!canCheckout) return;
 
-    checkout(
+    const resultOrderId = await checkout(
       selectedAddress as Tables<"addresses">,
       isSubscribed ? { plan, startDate, deliveryTime } : null,
     );
+
+    if (resultOrderId) {
+      setOrderId(resultOrderId);
+      setConfirmationModalVisible(true);
+    }
   };
 
   /* ---------------- EMPTY CART ---------------- */
@@ -339,6 +351,68 @@ export default function CartScreen() {
         visible={locationModalVisible}
         onClose={() => setLocationModalVisible(false)}
       />
+
+      {/* ORDER CONFIRMATION MODAL */}
+      <Modal
+        visible={confirmationModalVisible}
+        transparent
+        animationType="fade"
+      >
+        <View className="flex-1 bg-black/50 justify-center items-center p-6">
+          <View className="bg-background rounded-2xl p-8 gap-6 items-center w-full">
+            {/* SUCCESS ICON */}
+            <View className="bg-green-100 rounded-full p-4">
+              <Ionicons name="checkmark-circle" size={60} color="#16a34a" />
+            </View>
+
+            {/* SUCCESS TEXT */}
+            <View className="gap-2 items-center">
+              <Text className="text-2xl font-bold">Order Confirmed!</Text>
+              <Text className="text-gray-600 text-center">
+                Your order has been successfully placed. You'll receive updates
+                shortly.
+              </Text>
+            </View>
+
+            {/* ORDER ID */}
+            {orderId && (
+              <View className="bg-background-muted p-4 rounded-xl w-full">
+                <Text className="text-sm text-gray-600">Order ID</Text>
+                <Text className="text-lg font-semibold text-primary">
+                  #{orderId}
+                </Text>
+              </View>
+            )}
+
+            {/* ACTIONS */}
+            <View className="gap-3 w-full">
+              <TouchableOpacity
+                onPress={() => {
+                  setConfirmationModalVisible(false);
+                  if (orderId) {
+                    router.push(`/(user)/orders/${orderId}`);
+                  }
+                }}
+                className="bg-primary py-4 rounded-xl items-center"
+              >
+                <Text className="text-white font-bold text-lg">View Order</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => {
+                  setConfirmationModalVisible(false);
+                  router.push("/(user)/menu");
+                }}
+                className="border border-primary py-4 rounded-xl items-center"
+              >
+                <Text className="text-primary font-semibold text-lg">
+                  Continue Shopping
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       <StatusBar style="auto" />
     </View>

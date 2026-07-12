@@ -43,7 +43,7 @@ export default function ResetPasswordScreen() {
 
       try {
         // Exchange the token for a session using token hash
-        const { error: sessionError } = await supabase.auth.verifyOtp({
+        const { data, error: sessionError } = await supabase.auth.verifyOtp({
           token_hash: String(token_hash),
           type: "recovery",
         });
@@ -54,10 +54,16 @@ export default function ResetPasswordScreen() {
           return;
         }
 
+        // Check if session was successfully created
+        if (!data?.session) {
+          setError("Failed to verify reset token. Please request a new link.");
+          return;
+        }
+
         setValidToken(true);
       } catch (err) {
         setError("Failed to verify reset link");
-        console.error(err);
+        console.error("Token verification exception:", err);
       }
     };
 
@@ -112,6 +118,16 @@ export default function ResetPasswordScreen() {
     setLoading(true);
 
     try {
+      // Get current session to ensure we have a valid authenticated user
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
+
+      if (sessionError || !session) {
+        throw new Error("Session expired. Please request a new reset link.");
+      }
+
       // ✅ Now updateUser works because we have a valid session from verifyOtp
       const { error: updateError } = await supabase.auth.updateUser({
         password: password,
@@ -123,14 +139,16 @@ export default function ResetPasswordScreen() {
       setPassword("");
       setConfirmPassword("");
 
-      // Redirect to sign-in after 2 seconds
-      setTimeout(() => {
-        router.replace("/sign-in");
+      // Sign out the user and redirect to sign-in after 2 seconds
+      setTimeout(async () => {
+        await supabase.auth.signOut();
+        router.replace("/(auth)/sign-in");
       }, 2000);
     } catch (err: unknown) {
       const message =
         (err as Error)?.message ?? String(err ?? "Failed to update password");
       setError(message);
+      console.error("Password reset error:", err);
     } finally {
       setLoading(false);
     }

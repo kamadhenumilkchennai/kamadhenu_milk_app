@@ -44,7 +44,7 @@ type CartType = {
   checkout: (
     address: Tables<"addresses">,
     subscription?: SubscriptionData | null,
-  ) => void;
+  ) => Promise<string | null>;
   isCheckingOut: boolean;
 };
 
@@ -54,7 +54,7 @@ const CartContext = createContext<CartType>({
   updateQuantity: () => {},
   removeItem: () => {},
   total: 0,
-  checkout: () => {},
+  checkout: async () => null,
   isCheckingOut: false,
 });
 
@@ -127,8 +127,8 @@ export const CartProvider = ({ children }: PropsWithChildren) => {
   const checkout = async (
     address: Tables<"addresses">,
     subscription?: SubscriptionData | null,
-  ) => {
-    if (!items.length || isCheckingOut || !profile) return;
+  ): Promise<string | null> => {
+    if (!items.length || isCheckingOut || !profile) return null;
 
     setIsCheckingOut(true);
 
@@ -185,9 +185,10 @@ export const CartProvider = ({ children }: PropsWithChildren) => {
       );
 
       clearCart();
-      router.replace(`/(user)/orders/${order.id}`);
+      return order.id.toString();
     } catch (err) {
       console.error("Checkout failed:", err);
+      return null;
     } finally {
       setIsCheckingOut(false);
     }
